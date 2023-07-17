@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web:
+    image: nginx:stable-alpine
+    network_mode: bridge
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro

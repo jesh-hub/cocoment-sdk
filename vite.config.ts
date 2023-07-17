@@ -10,4 +10,14 @@ export default defineConfig({
       src: path.resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'src/main.tsx',
+      },
+      output: {
+        entryFileNames: 'ccmt.js',
+      },
+    },
+  },
 });
