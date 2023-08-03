@@ -1,5 +1,6 @@
 import Comment from 'src/components/Comment';
 import { calcTimeAgo } from 'src/util/Date';
+import WritableComment from 'src/components/WritableComment';
 
 function App() {
   const comments = [
@@ -46,6 +47,7 @@ function App() {
           />
         );
       })}
+      <WritableComment />
     </>
   );
 }
