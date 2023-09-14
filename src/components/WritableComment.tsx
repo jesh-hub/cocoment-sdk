@@ -1,47 +1,68 @@
-import React, { useRef, useState } from 'react';
-import { Button } from 'src/style/components';
+import React, { useContext, useRef, useState } from 'react';
+import { Button } from 'src/components/Button';
+import { ProcessorContext } from 'src/contexts/ProcessorContext';
 
 type WritableCommentProps = {};
 
 const WritableComment: React.FC<WritableCommentProps> = () => {
-  const [name, setName] = useState<string>('');
+  const { processAsync, hideToast, showToast } = useContext(ProcessorContext);
+
   const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
-  const [content, setContent] = useState<string>('');
 
-  const inputRef: React.RefObject<HTMLInputElement> =
-    useRef<HTMLInputElement>(null);
-  const handleChangeAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const [file] = e.target.files || [];
+  const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) =>
+    processAsync(async () => {
+      const [file] = e.target.files || [];
 
-    // TODO 에러
-    if (file === undefined) return;
-    if (!file.type.startsWith('image/')) return;
-    if (file.size / 1024 / 1024 > 20) return;
+      if (file === undefined) throw new Error('파일을 다시 확인해주세요.');
+      if (!file.type.startsWith('image/'))
+        throw new Error('이미지 파일만 첨부할 수 있어요.');
 
-    // TODO 로딩, 에러 처리
-    const reader = new FileReader();
-    await new Promise<void>((resolve, reject) => {
-      reader.onload = () => resolve();
-      reader.onerror = (event: ProgressEvent<FileReader>) => {
-        reject(event.target?.error);
-      };
-      reader.readAsDataURL(file);
+      // TODO 로딩 처리
+      const reader = new FileReader();
+      await new Promise<void>((resolve, reject) => {
+        reader.onload = () => resolve();
+        reader.onerror = (event: ProgressEvent<FileReader>) => {
+          if (event.target?.error) reject(event.target.error);
+          else reject(new Error('첨부하신 이미지 파일을 처리할 수 없습니다.'));
+        };
+        reader.readAsDataURL(file);
+      });
+      if (reader.result !== null) setAvatarDataURL(reader.result as string);
+      setAvatar(file);
     });
-    if (reader.result !== null) setAvatarDataURL(reader.result as string);
-    setAvatar(file);
-  };
+
+  const [name, setName] = useState<string>('');
+  const [content, setContent] = useState<string>('');
+  const isPrevInvalid = useRef<boolean>(false);
+
+  const handleInputChange =
+    (setState: typeof setName | typeof setContent) =>
+    ({ target }: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setState(target.value);
+      isPrevInvalid.current = false;
+    };
+  const handleInputInvalid =
+    (message: string) =>
+    (e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      e.preventDefault();
+
+      if (!isPrevInvalid.current) {
+        showToast(message);
+        (e.target as HTMLInputElement | HTMLTextAreaElement).focus();
+        isPrevInvalid.current = true;
+      }
+    };
 
   const [focusing, setFocusing] = useState<boolean>(false);
   const timeoutId = useRef<undefined | NodeJS.Timeout>();
-  const handleFocus =
-    (focus: boolean, doTimeout = false) =>
-    () => {
-      if (timeoutId.current !== undefined) clearTimeout(timeoutId.current);
-      if (doTimeout)
-        timeoutId.current = setTimeout(() => setFocusing(focus), 100);
-      else setFocusing(focus);
-    };
+
+  const handleFocus = (focus: boolean) => () => {
+    if (timeoutId.current !== undefined) clearTimeout(timeoutId.current);
+
+    if (focus) setFocusing(true);
+    else timeoutId.current = setTimeout(() => setFocusing(false), 100); // blur 컬러는 조금 이따가
+  };
 
   return (
     <form
@@ -49,8 +70,13 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
         focusing ? 'border-blue-500' : 'border-gray-300'
       }`}
       onSubmit={(e) => {
+        hideToast();
         e.preventDefault();
+
         console.log(name, content, avatar);
+      }}
+      onClick={() => {
+        isPrevInvalid.current = false;
       }}
     >
       <div className="flex px-3">
@@ -61,7 +87,6 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
             accept="image/*"
             title="아바타 이미지를 등록하세요. (선택)"
             className="hidden"
-            ref={inputRef}
             onChange={handleChangeAvatar}
           />
           <label
@@ -85,11 +110,12 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
           name="name"
           value={name}
           placeholder="이름을 입력하세요."
-          required
           className="text-md bg-transparent px-2 py-1 text-slate-800 placeholder:text-slate-400 focus-visible:outline-0"
+          required
           onFocus={handleFocus(true)}
-          onBlur={handleFocus(false, true)}
-          onChange={({ target: { value } }) => setName(value)} // TODO handleChange util화?
+          onBlur={handleFocus(false)}
+          onChange={handleInputChange(setName)}
+          onInvalid={handleInputInvalid('이름을 입력하세요.')}
         />
       </div>
       <textarea
@@ -97,10 +123,11 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
         value={content}
         placeholder="내용을 입력하세요."
         className="text-md mt-3 w-full resize-none bg-transparent p-1 pl-3 text-slate-800  placeholder:text-slate-400 focus-visible:outline-0"
-        onFocus={handleFocus(true)}
-        onBlur={handleFocus(false, true)}
-        onChange={({ target }) => setContent(target.value)} // TODO handleChange util화?
         required
+        onFocus={handleFocus(true)}
+        onBlur={handleFocus(false)}
+        onChange={handleInputChange(setContent)}
+        onInvalid={handleInputInvalid('내용을 입력하세요.')}
       />
       <div className="mr-3 mt-1 text-right">
         <Button type="submit" variant="submit-outline">

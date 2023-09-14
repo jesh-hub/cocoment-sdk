@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import { Button } from 'src/style/components';
+import React from 'react';
+import { Button } from 'src/components/Button';
 
 type CommentProps = {
   writer: {
@@ -13,7 +13,7 @@ type CommentProps = {
   handleReply: () => void;
 };
 
-const Comment: FC<CommentProps> = ({ writer, comment, handleReply }) => {
+const Comment: React.FC<CommentProps> = ({ writer, comment, handleReply }) => {
   return (
     <article className="my-3 flex flex-col gap-3 rounded rounded-lg border border-gray-300 px-3 py-3.5 text-slate-800 shadow">
       <div className="flex items-center gap-2">

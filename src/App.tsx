@@ -1,6 +1,7 @@
 import Comment from 'src/components/Comment';
-import { calcTimeAgo } from 'src/util/Date';
 import WritableComment from 'src/components/WritableComment';
+import { ProcessorProvider } from 'src/contexts/ProcessorContext';
+import { calcTimeAgo } from 'src/utils/Date';
 
 function App() {
   const comments = [
@@ -36,7 +37,7 @@ function App() {
     },
   ];
   return (
-    <>
+    <ProcessorProvider>
       {comments.map(({ id, created, content, writer }) => {
         return (
           <Comment
@@ -48,7 +49,7 @@ function App() {
         );
       })}
       <WritableComment />
-    </>
+    </ProcessorProvider>
   );
 }
 
