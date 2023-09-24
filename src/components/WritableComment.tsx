@@ -4,9 +4,11 @@ import { ProcessorContext } from 'src/contexts/ProcessorContext';
 import { SpinnerContext } from 'src/contexts/SpinnerContext';
 import { withSpinner } from 'src/utils/HOC';
 
-type WritableCommentProps = {};
+type WritableCommentProps = {
+  handleSubmit: (content: string, name: string) => void;
+};
 
-const WritableComment: React.FC<WritableCommentProps> = () => {
+const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
   const { hideToast, showToast } = useContext(ProcessorContext);
   const { waitProcessAsync } = useContext(SpinnerContext);
 
@@ -75,8 +77,7 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
       onSubmit={(e) => {
         hideToast();
         e.preventDefault();
-
-        console.log(name, content, avatar);
+        handleSubmit(content, name);
       }}
       onClick={() => {
         isPrevInvalid.current = false;

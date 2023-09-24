@@ -1,21 +1,27 @@
 import React from 'react';
 import { Button } from 'src/components/Button';
+import { calcTimeAgo } from 'src/utils/Date';
 
 type CommentProps = {
+  comment: {
+    id: string;
+    created: Date;
+    content: string;
+  };
   writer: {
     name: string;
     avatar?: string;
   };
-  comment: {
-    timeAgo: string;
-    content: string;
-  };
-  handleReply: () => void;
+  handleClickReply?: (id: string) => () => void;
 };
 
-const Comment: React.FC<CommentProps> = ({ writer, comment, handleReply }) => {
+const Comment: React.FC<CommentProps> = ({
+  comment,
+  writer,
+  handleClickReply,
+}) => {
   return (
-    <article className="my-3 flex flex-col gap-3 rounded rounded-lg border border-gray-300 px-3 py-3.5 text-slate-800 shadow">
+    <div className="my-3 flex flex-col gap-3 rounded-lg border border-gray-300 px-3 py-3.5 text-slate-800 shadow">
       <div className="flex items-center gap-2">
         {writer.avatar !== undefined && (
           <img
@@ -32,17 +38,19 @@ const Comment: React.FC<CommentProps> = ({ writer, comment, handleReply }) => {
         <div>
           {writer.name}
           <div className="mt-auto flex items-center gap-2 text-xs">
-            <div className="text-slate-500">{comment.timeAgo}</div>
-            <Button size="sm" onClick={handleReply}>
-              대댓글
-            </Button>
+            <div className="text-slate-500">{calcTimeAgo(comment.created)}</div>
+            {handleClickReply !== undefined && (
+              <Button size="sm" onClick={handleClickReply(comment.id)}>
+                대댓글
+              </Button>
+            )}
           </div>
         </div>
       </div>
       <div className="flex flex-col gap-1">
         <p>{comment.content}</p>
       </div>
-    </article>
+    </div>
   );
 };
 
