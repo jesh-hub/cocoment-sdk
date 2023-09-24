@@ -1,6 +1,7 @@
 import Comment from 'src/components/Comment';
 import WritableComment from 'src/components/WritableComment';
 import { ProcessorProvider } from 'src/contexts/ProcessorContext';
+import { SpinnerProvider } from 'src/contexts/SpinnerContext';
 import { calcTimeAgo } from 'src/utils/Date';
 
 function App() {
@@ -38,17 +39,19 @@ function App() {
   ];
   return (
     <ProcessorProvider>
-      {comments.map(({ id, created, content, writer }) => {
-        return (
-          <Comment
-            key={id}
-            writer={writer}
-            comment={{ timeAgo: calcTimeAgo(created), content }}
-            handleReply={() => console.log('reply on', id)}
-          />
-        );
-      })}
-      <WritableComment />
+      <SpinnerProvider>
+        {comments.map(({ id, created, content, writer }) => {
+          return (
+            <Comment
+              key={id}
+              writer={writer}
+              comment={{ timeAgo: calcTimeAgo(created), content }}
+              handleReply={() => console.log('reply on', id)}
+            />
+          );
+        })}
+        <WritableComment />
+      </SpinnerProvider>
     </ProcessorProvider>
   );
 }

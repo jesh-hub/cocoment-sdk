@@ -1,17 +1,20 @@
 import React, { useContext, useRef, useState } from 'react';
 import { Button } from 'src/components/Button';
 import { ProcessorContext } from 'src/contexts/ProcessorContext';
+import { SpinnerContext } from 'src/contexts/SpinnerContext';
+import { withSpinner } from 'src/utils/HOC';
 
 type WritableCommentProps = {};
 
 const WritableComment: React.FC<WritableCommentProps> = () => {
-  const { processAsync, hideToast, showToast } = useContext(ProcessorContext);
+  const { hideToast, showToast } = useContext(ProcessorContext);
+  const { waitProcessAsync } = useContext(SpinnerContext);
 
   const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
 
   const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) =>
-    processAsync(async () => {
+    waitProcessAsync(async () => {
       const [file] = e.target.files || [];
 
       if (file === undefined) throw new Error('파일을 다시 확인해주세요.');
@@ -138,4 +141,4 @@ const WritableComment: React.FC<WritableCommentProps> = () => {
   );
 };
 
-export default WritableComment;
+export default withSpinner(WritableComment);

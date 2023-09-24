@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { TriangleWarning } from 'src/components/SvgIcons';
-
-type FuncPromiseVoid = () => Promise<void>;
+import { FuncPromiseVoid } from 'src/types/Primitive';
+import { warn } from 'src/utils/Log';
 
 interface ProcessorContextProps {
   // 항상 resolve
@@ -11,9 +11,9 @@ interface ProcessorContextProps {
 }
 
 const ProcessorContext = createContext<ProcessorContextProps>({
-  processAsync: async () => undefined,
-  hideToast: () => undefined,
-  showToast: () => undefined,
+  processAsync: async () => warn("ProcessorProvider hasn't been loaded."),
+  hideToast: () => warn("ProcessorProvider hasn't been loaded."),
+  showToast: () => warn("ProcessorProvider hasn't been loaded."),
 });
 
 const ProcessorProvider = ({ children }: React.PropsWithChildren) => {
