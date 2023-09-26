@@ -1,7 +1,7 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from 'src/components/Button';
-import { ProcessorContext } from 'src/contexts/ProcessorContext';
-import { SpinnerContext } from 'src/contexts/SpinnerContext';
+import useSpinner from 'src/hooks/useSpinner';
+import useToast from 'src/hooks/useToast';
 import { withSpinner } from 'src/utils/HOC';
 
 type WritableCommentProps = {
@@ -9,8 +9,8 @@ type WritableCommentProps = {
 };
 
 const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
-  const { hideToast, showToast } = useContext(ProcessorContext);
-  const { waitProcessAsync } = useContext(SpinnerContext);
+  const { hide, error, warn } = useToast();
+  const { waitProcessAsync } = useSpinner();
 
   const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
@@ -23,7 +23,6 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       if (!file.type.startsWith('image/'))
         throw new Error('이미지 파일만 첨부할 수 있어요.');
 
-      // TODO 로딩 처리
       const reader = new FileReader();
       await new Promise<void>((resolve, reject) => {
         reader.onload = () => resolve();
@@ -53,7 +52,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       e.preventDefault();
 
       if (!isPrevInvalid.current) {
-        showToast(message);
+        error(message);
         (e.target as HTMLInputElement | HTMLTextAreaElement).focus();
         isPrevInvalid.current = true;
       }
@@ -75,8 +74,8 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
         focusing ? 'border-blue-500' : 'border-gray-300'
       }`}
       onSubmit={(e) => {
-        hideToast();
         e.preventDefault();
+        hide();
         handleSubmit(content, name);
       }}
       onClick={() => {
@@ -98,6 +97,10 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
             className={`h-10 w-10 cursor-pointer rounded-full border bg-slate-800 pl-px text-center text-2xl leading-9 text-amber-50 ${
               avatar ? 'border-slate-300' : 'border-slate-500'
             }`}
+            onClick={(e) => {
+              e.preventDefault();
+              warn('준비 중, 곧 만나요!');
+            }}
           >
             {avatar === undefined && '?'}
             {avatar !== undefined && (
