@@ -4,6 +4,7 @@ import WritableComment from 'src/components/WritableComment';
 import { VisualComment } from 'src/types/Comment.ts';
 
 type CommentTreeProps = {
+  parentId?: string; // uuid
   comments: VisualComment[];
   handleClickReply?: (id: string) => () => void;
   handlePostComment: (
@@ -11,43 +12,46 @@ type CommentTreeProps = {
     userName: string,
     parentId?: string,
   ) => Promise<void>;
-  level?: number;
 };
 
 const CommentTree: React.FC<CommentTreeProps> = ({
+  parentId,
   comments,
   handleClickReply,
   handlePostComment,
-  level = 0,
 }) => {
   return (
-    <ul className={`ml-${8 * level}`}>
-      {comments.map(
-        ({ id, created_at, body_text, user_id, childrenVisible, child }) => (
-          <li key={id}>
-            <Comment
-              comment={{
-                id,
-                created: new Date(created_at),
-                content: body_text || '',
-              }}
-              writer={{ name: user_id }}
-              handleClickReply={handleClickReply}
-            />
-            {childrenVisible && (
-              <CommentTree
-                comments={child}
-                handlePostComment={handlePostComment}
-                level={level + 1}
+    <div className={parentId && `ml-8`}>
+      <ul>
+        {comments.map(
+          ({ id, created_at, body_text, user_id, childrenVisible, child }) => (
+            <li key={id}>
+              <Comment
+                comment={{
+                  id,
+                  created: new Date(created_at),
+                  content: body_text || '',
+                }}
+                writer={{ name: user_id }}
+                handleClickReply={handleClickReply}
               />
-            )}
-          </li>
-        ),
+              {childrenVisible && (
+                <CommentTree
+                  parentId={id}
+                  comments={child || []}
+                  handlePostComment={handlePostComment}
+                />
+              )}
+            </li>
+          ),
+        )}
+      </ul>
+      {parentId !== undefined && (
+        <WritableComment
+          handleSubmit={(c, u) => handlePostComment(c, u, parentId)}
+        />
       )}
-      <li>
-        <WritableComment handleSubmit={handlePostComment} />
-      </li>
-    </ul>
+    </div>
   );
 };
 

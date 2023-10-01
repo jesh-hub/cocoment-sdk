@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { Button } from 'src/components/Button';
-import useSpinner from 'src/hooks/useSpinner';
+import { Spinner } from 'src/components/SvgIcons.tsx';
 import useToast from 'src/hooks/useToast';
-import { withSpinner } from 'src/utils/HOC';
+import useWaitProcess from 'src/hooks/useWaitProcess';
 
 type WritableCommentProps = {
-  handleSubmit: (content: string, name: string) => void;
+  handleSubmit: (content: string, name: string) => Promise<void>;
 };
 
 const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
   const { hide, error, warn } = useToast();
-  const { waitProcessAsync } = useSpinner();
+  const { waitingCount, waitProcessAsync } = useWaitProcess();
 
   const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
@@ -76,7 +76,11 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       onSubmit={(e) => {
         e.preventDefault();
         hide();
-        handleSubmit(content, name);
+        waitProcessAsync(async () => {
+          await handleSubmit(content, name);
+          setName('');
+          setContent('');
+        }).then();
       }}
       onClick={() => {
         isPrevInvalid.current = false;
@@ -137,12 +141,17 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
         onInvalid={handleInputInvalid('내용을 입력하세요.')}
       />
       <div className="mr-3 mt-1 text-right">
-        <Button type="submit" variant="submit-outline">
-          등록
+        <Button
+          type="submit"
+          variant="submit-outline"
+          disabled={waitingCount > 0}
+        >
+          {waitingCount > 0 && <Spinner />}
+          {waitingCount === 0 && '등록'}
         </Button>
       </div>
     </form>
   );
 };
 
-export default withSpinner(WritableComment);
+export default WritableComment;
