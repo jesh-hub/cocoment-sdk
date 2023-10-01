@@ -7,11 +7,11 @@ import 'src/index.css';
 
 const RootElementId = 'cocoment-root';
 const $root = document.getElementById(RootElementId);
-const pageId = $root?.getAttribute('page-id') || undefined;
+const pageId = $root?.dataset.pageid || undefined;
 
 if ($root === null) error(`cannot find root element: ${RootElementId}`);
 else if (pageId === undefined)
-  error(`cannot find attribute of root element: page-id`);
+  error(`cannot find attribute of root element: data-pageid`);
 else {
   $root.classList.add('relative');
   ReactDOM.createRoot($root).render(
