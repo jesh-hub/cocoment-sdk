@@ -23,7 +23,7 @@ const CommentTree: React.FC<CommentTreeProps> = ({
   return (
     <ul className={`ml-${8 * level}`}>
       {comments.map(
-        ({ id, created_at, body_text, user_id, childrenVisible, childs }) => (
+        ({ id, created_at, body_text, user_id, childrenVisible, child }) => (
           <li key={id}>
             <Comment
               comment={{
@@ -36,7 +36,7 @@ const CommentTree: React.FC<CommentTreeProps> = ({
             />
             {childrenVisible && (
               <CommentTree
-                comments={childs}
+                comments={child}
                 handlePostComment={handlePostComment}
                 level={level + 1}
               />

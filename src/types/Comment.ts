@@ -2,8 +2,7 @@ export type CcmtComment = {
   // body_html과 body_text가 모두 null일 수는 없다.
   body_html: string | null;
   body_text: string | null;
-  // TODO children 리네이밍 예정
-  childs: CcmtComment[];
+  child: CcmtComment[];
   created_at: string;
   history: {
     created_at: string;
