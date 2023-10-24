@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Button } from 'src/components/Button';
+import React, { useEffect, useRef, useState } from 'react';
+import Button from 'src/components/Button';
 import { Spinner } from 'src/components/SvgIcons.tsx';
+import useApp from 'src/hooks/useApp';
 import useToast from 'src/hooks/useToast';
 import useWaitProcess from 'src/hooks/useWaitProcess';
 
@@ -9,7 +10,8 @@ type WritableCommentProps = {
 };
 
 const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
-  const { hide, error, warn } = useToast();
+  const { user } = useApp();
+  const { hideToast, errorToast, warnToast } = useToast();
   const { waitingCount, waitProcessAsync } = useWaitProcess();
 
   const [avatar, setAvatar] = useState<File>();
@@ -40,6 +42,10 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
   const [content, setContent] = useState<string>('');
   const isPrevInvalid = useRef<boolean>(false);
 
+  useEffect(() => {
+    if (user) setName(user.displayName || '');
+  }, [user]);
+
   const handleInputChange =
     (setState: typeof setName | typeof setContent) =>
     ({ target }: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -52,7 +58,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       e.preventDefault();
 
       if (!isPrevInvalid.current) {
-        error(message);
+        errorToast(message);
         (e.target as HTMLInputElement | HTMLTextAreaElement).focus();
         isPrevInvalid.current = true;
       }
@@ -75,7 +81,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       }`}
       onSubmit={(e) => {
         e.preventDefault();
-        hide();
+        hideToast();
         waitProcessAsync(async () => {
           await handleSubmit(content, name);
           setName('');
@@ -103,7 +109,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
             }`}
             onClick={(e) => {
               e.preventDefault();
-              warn('준비 중, 곧 만나요!');
+              warnToast('준비 중, 곧 만나요!');
             }}
           >
             {avatar === undefined && '?'}
@@ -141,11 +147,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
         onInvalid={handleInputInvalid('내용을 입력하세요.')}
       />
       <div className="mr-3 mt-1 text-right">
-        <Button
-          type="submit"
-          variant="submit-outline"
-          disabled={waitingCount > 0}
-        >
+        <Button type="submit" variant="primary" disabled={waitingCount > 0}>
           {waitingCount > 0 && <Spinner />}
           {waitingCount === 0 && '등록'}
         </Button>

@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import CommentTree from 'src/components/CommentTree';
+import MainPartHeader from 'src/components/MainPartHeader';
 import { Spinner } from 'src/components/SvgIcons.tsx';
 import WritableComment from 'src/components/WritableComment.tsx';
-import { PageInfoContext } from 'src/contexts/PageInfoContext';
+import { AppContext } from 'src/contexts/AppContext';
 import useWaitProcess from 'src/hooks/useWaitProcess';
 import { get, post } from 'src/services/api';
 import type {
@@ -12,7 +13,7 @@ import type {
 } from 'types/comment';
 
 const MainPart: React.FC = () => {
-  const { pageId } = useContext(PageInfoContext);
+  const { pageId } = useContext(AppContext);
   const { waitingCount, waitProcessAsync } = useWaitProcess();
 
   const [comments, setComments] = useState<VisualComment[]>([]);
@@ -58,6 +59,7 @@ const MainPart: React.FC = () => {
 
   return (
     <>
+      <MainPartHeader />
       <WritableComment handleSubmit={handlePostComment} />
       {waitingCount === 0 && (
         <CommentTree

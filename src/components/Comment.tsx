@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'src/components/Button';
+import Button from 'src/components/Button';
 import { calcTimeAgo } from 'src/utils/date';
 
 type CommentProps = {
@@ -40,7 +40,11 @@ const Comment: React.FC<CommentProps> = ({
           <div className="mt-auto flex items-center gap-2 text-xs">
             <div className="text-slate-500">{calcTimeAgo(comment.created)}</div>
             {handleClickReply !== undefined && (
-              <Button size="sm" onClick={handleClickReply(comment.id)}>
+              <Button
+                size="sm"
+                weight="semibold"
+                onClick={handleClickReply(comment.id)}
+              >
                 대댓글
               </Button>
             )}
