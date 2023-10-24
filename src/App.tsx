@@ -1,14 +1,14 @@
 import MainPart from 'src/components/MainPart';
+import { AppProvider } from 'src/contexts/AppContext';
 import { ProcessorProvider } from 'src/contexts/ProcessorContext';
-import { PageInfoProvider } from './contexts/PageInfoContext';
 
 function App({ pageId }: { pageId: string }) {
   return (
-    <PageInfoProvider pageId={pageId}>
+    <AppProvider pageId={pageId}>
       <ProcessorProvider>
         <MainPart />
       </ProcessorProvider>
-    </PageInfoProvider>
+    </AppProvider>
   );
 }
 

@@ -6,16 +6,16 @@ import { warn } from 'src/utils/log';
 interface ProcessorContextProps {
   // 항상 resolve
   processAsync: (fn: FuncPromiseVoid) => Promise<void>;
-  hide: () => void;
-  warn: (msg: string) => void;
-  error: (msg: string) => void;
+  hideToast: () => void;
+  warnToast: (msg: string) => void;
+  errorToast: (msg: string) => void;
 }
 
 const ProcessorContext = createContext<ProcessorContextProps>({
   processAsync: async () => warn("ProcessorProvider hasn't been loaded."),
-  hide: () => warn("ProcessorProvider hasn't been loaded."),
-  warn: () => warn("ProcessorProvider hasn't been loaded."),
-  error: () => warn("ProcessorProvider hasn't been loaded."),
+  hideToast: () => warn("ProcessorProvider hasn't been loaded."),
+  warnToast: () => warn("ProcessorProvider hasn't been loaded."),
+  errorToast: () => warn("ProcessorProvider hasn't been loaded."),
 });
 
 const Theme = {
@@ -30,24 +30,34 @@ const ProcessorProvider = ({ children }: React.PropsWithChildren) => {
   const [toastMessage, setToastMessage] = useState('');
   const [isTransitionReady, setTransitionReady] = useState<boolean>(false);
 
-  const hide = () => {
+  const hideToast = () => {
     // TODO 내려가고 있는데 새로운 ToastMessage가 들어온 경우
     setTransitionReady(false);
     setTimeout(() => setToastMessage(''), TransitionDuration); // 내려가는 Transition 후 message 초기화
+  };
+
+  const showToast = (
+    theme: keyof typeof Theme,
+    message: string,
+    icon?: () => JSX.Element,
+  ) => {
+    setTheme(Theme[theme]);
+    setToastMessage(message);
+    if (icon !== undefined) setIcon(icon);
   };
 
   const processAsync = async (fn: FuncPromiseVoid) => {
     try {
       await fn();
     } catch (err) {
-      setToastMessage((err as Error).message || (err as string));
+      showToast('error', (err as Error).message || (err as string));
     }
   };
 
   useEffect(() => {
     if (toastMessage !== '') {
       setTransitionReady(true);
-      const transitionTimeout = setTimeout(hide, 10 * TransitionDuration);
+      const transitionTimeout = setTimeout(hideToast, 10 * TransitionDuration);
 
       return () => clearTimeout(transitionTimeout);
     }
@@ -57,17 +67,10 @@ const ProcessorProvider = ({ children }: React.PropsWithChildren) => {
     <ProcessorContext.Provider
       value={{
         processAsync,
-        hide,
-        warn: (message: string) => {
-          setIcon(Bell);
-          setTheme(Theme.warn);
-          setToastMessage(message);
-        },
-        error: (message: string) => {
-          setIcon(TriangleWarning);
-          setTheme(Theme.error);
-          setToastMessage(message);
-        },
+        hideToast,
+        warnToast: (message: string) => showToast('warn', message, Bell),
+        errorToast: (message: string) =>
+          showToast('error', message, TriangleWarning),
       }}
     >
       {children}
