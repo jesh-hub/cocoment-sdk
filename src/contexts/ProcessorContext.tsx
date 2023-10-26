@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { Bell, TriangleWarning } from 'src/components/SvgIcons';
-import { FuncPromiseVoid } from 'src/types/Primitive';
-import { warn } from 'src/utils/Log';
+import type { FuncPromiseVoid } from 'types/common';
+import { warn } from 'src/utils/log';
 
 interface ProcessorContextProps {
   // 항상 resolve

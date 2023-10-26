@@ -4,12 +4,12 @@ import { Spinner } from 'src/components/SvgIcons.tsx';
 import WritableComment from 'src/components/WritableComment.tsx';
 import { PageInfoContext } from 'src/contexts/PageInfoContext';
 import useWaitProcess from 'src/hooks/useWaitProcess';
-import { get, post } from 'src/services/Api';
-import {
+import { get, post } from 'src/services/api';
+import type {
   CcmtComment,
   CcmtCommentPostBody,
   VisualComment,
-} from 'src/types/Comment';
+} from 'types/comment';
 
 const MainPart: React.FC = () => {
   const { pageId } = useContext(PageInfoContext);

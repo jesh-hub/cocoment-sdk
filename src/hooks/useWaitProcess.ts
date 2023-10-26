@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useToast from 'src/hooks/useToast';
-import { FuncPromiseVoid } from 'src/types/Primitive';
+import type { FuncPromiseVoid } from 'types/common';
 
 export default function useWaitProcess() {
   const { processAsync } = useToast();

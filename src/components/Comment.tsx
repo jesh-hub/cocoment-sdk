@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'src/components/Button';
-import { calcTimeAgo } from 'src/utils/Date';
+import { calcTimeAgo } from 'src/utils/date';
 
 type CommentProps = {
   comment: {

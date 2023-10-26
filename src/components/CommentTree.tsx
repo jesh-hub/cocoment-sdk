@@ -1,7 +1,7 @@
 import React from 'react';
 import Comment from 'src/components/Comment';
 import WritableComment from 'src/components/WritableComment';
-import { VisualComment } from 'src/types/Comment.ts';
+import type { VisualComment } from 'types/comment';
 
 type CommentTreeProps = {
   parentId?: string; // uuid
