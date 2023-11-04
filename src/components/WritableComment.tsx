@@ -40,6 +40,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
 
   const [name, setName] = useState<string>('');
   const [content, setContent] = useState<string>('');
+  const submitButtonRef = useRef<HTMLButtonElement | null>(null);
   const isPrevInvalid = useRef<boolean>(false);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       e.preventDefault();
 
       if (!isPrevInvalid.current) {
-        errorToast(message);
+        errorToast(message, submitButtonRef.current as HTMLButtonElement, 'l');
         (e.target as HTMLInputElement | HTMLTextAreaElement).focus();
         isPrevInvalid.current = true;
       }
@@ -109,7 +110,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
             }`}
             onClick={(e) => {
               e.preventDefault();
-              warnToast('준비 중, 곧 만나요!');
+              warnToast('준비 중, 곧 만나요!', e.target);
             }}
           >
             {avatar === undefined && '?'}
@@ -147,7 +148,12 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
         onInvalid={handleInputInvalid('내용을 입력하세요.')}
       />
       <div className="mr-3 mt-1 text-right">
-        <Button type="submit" variant="primary" disabled={waitingCount > 0}>
+        <Button
+          type="submit"
+          ref={submitButtonRef}
+          variant="primary"
+          disabled={waitingCount > 0}
+        >
           {waitingCount > 0 && <Spinner />}
           {waitingCount === 0 && '등록'}
         </Button>

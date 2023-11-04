@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes } from 'react';
+import React, { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md';
@@ -6,14 +6,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'clear' | 'primary' | 'secondary';
 }
 
-const Button = ({
-  type,
-  children,
-  size = 'md',
-  weight = '',
-  variant = 'clear',
-  ...rest
-}: ButtonProps) => {
+const Button: React.ForwardRefRenderFunction<HTMLButtonElement, ButtonProps> = (
+  { type, children, size = 'md', weight = '', variant = 'clear', ...rest },
+  ref,
+) => {
   const SIZE = {
     sm: 'rounded-md px-2 py-1 text-xs',
     md: 'rounded-md px-3 py-[0.3125rem] text-sm',
@@ -35,6 +31,7 @@ const Button = ({
   return (
     <button
       type={type || 'button'}
+      ref={ref}
       className={`hover:cursor-pointer ${
         weight && `font-${weight}`
       } ${SIZE} ${BORDER} ${COLOR}`}
@@ -45,4 +42,4 @@ const Button = ({
   );
 };
 
-export default Button;
+export default React.forwardRef(Button);

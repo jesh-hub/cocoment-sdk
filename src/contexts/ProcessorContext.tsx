@@ -1,14 +1,16 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useState } from 'react';
 import { Bell, TriangleWarning } from 'src/components/SvgIcons';
-import type { FuncPromiseVoid } from 'types/common';
+import Toast from 'src/components/Toast';
 import { warn } from 'src/utils/log';
+import type { FuncPromiseVoid } from 'types/common';
+import type { ToastPlacement } from 'types/toast';
 
 interface ProcessorContextProps {
   // 항상 resolve
   processAsync: (fn: FuncPromiseVoid) => Promise<void>;
   hideToast: () => void;
-  warnToast: (msg: string) => void;
-  errorToast: (msg: string) => void;
+  warnToast: (msg: string, target?: EventTarget, loc?: ToastPlacement) => void;
+  errorToast: (msg: string, target?: EventTarget, loc?: ToastPlacement) => void;
 }
 
 const ProcessorContext = createContext<ProcessorContextProps>({
@@ -18,32 +20,45 @@ const ProcessorContext = createContext<ProcessorContextProps>({
   errorToast: () => warn("ProcessorProvider hasn't been loaded."),
 });
 
-const Theme = {
-  warn: 'bg-amber-300 text-slate-900',
-  error: 'bg-red-500 text-slate-50',
-};
-const TransitionDuration = 300;
-
 const ProcessorProvider = ({ children }: React.PropsWithChildren) => {
-  const [theme, setTheme] = useState<(typeof Theme)[keyof typeof Theme]>();
-  const [Icon, setIcon] = useState<React.ReactNode>();
-  const [toastMessage, setToastMessage] = useState('');
-  const [isTransitionReady, setTransitionReady] = useState<boolean>(false);
-
-  const hideToast = () => {
-    // TODO 내려가고 있는데 새로운 ToastMessage가 들어온 경우
-    setTransitionReady(false);
-    setTimeout(() => setToastMessage(''), TransitionDuration); // 내려가는 Transition 후 message 초기화
-  };
+  const [messages, setMessages] = useState<
+    {
+      id: number; // new Date.getTime()
+      HeadIcon?: () => JSX.Element;
+      type: 'warn' | 'error';
+      message: string;
+      target?: EventTarget;
+      placement?: ToastPlacement;
+    }[]
+  >([]);
 
   const showToast = (
-    theme: keyof typeof Theme,
+    type: 'warn' | 'error',
     message: string,
-    icon?: () => JSX.Element,
+    options?: {
+      icon?: () => JSX.Element;
+      target?: EventTarget;
+      placement?: ToastPlacement;
+    },
   ) => {
-    setTheme(Theme[theme]);
-    setToastMessage(message);
-    if (icon !== undefined) setIcon(icon);
+    const id = new Date().getTime();
+
+    setMessages((arr) => {
+      return arr.concat({
+        id,
+        HeadIcon: options?.icon,
+        type,
+        message,
+        target: options?.target,
+        placement: options?.placement,
+      });
+    });
+    return id;
+  };
+
+  const hideToast = (id?: number) => {
+    if (id === undefined) setMessages([]);
+    else setMessages((arr) => arr.filter((msg) => msg.id !== id));
   };
 
   const processAsync = async (fn: FuncPromiseVoid) => {
@@ -54,38 +69,39 @@ const ProcessorProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  useEffect(() => {
-    if (toastMessage !== '') {
-      setTransitionReady(true);
-      const transitionTimeout = setTimeout(hideToast, 10 * TransitionDuration);
-
-      return () => clearTimeout(transitionTimeout);
-    }
-  }, [toastMessage]);
-
   return (
     <ProcessorContext.Provider
       value={{
         processAsync,
         hideToast,
-        warnToast: (message: string) => showToast('warn', message, Bell),
-        errorToast: (message: string) =>
-          showToast('error', message, TriangleWarning),
+        warnToast: (msg, target, placement) =>
+          showToast('warn', msg, {
+            icon: Bell,
+            target,
+            placement: target !== undefined ? placement || 'r' : undefined,
+          }),
+        errorToast: (msg, target, placement) =>
+          showToast('error', msg, {
+            icon: TriangleWarning,
+            target,
+            placement: target !== undefined ? placement || 'r' : undefined,
+          }),
       }}
     >
       {children}
-      <div className="absolute inset-x-0 flex justify-center">
-        {toastMessage && (
-          <div
-            className={`absolute -bottom-9 inline-flex h-9 items-center gap-1.5 rounded-3xl px-5 opacity-0 transition-all duration-${TransitionDuration} ${theme} ${
-              isTransitionReady && 'bottom-px opacity-100'
-            }`}
-          >
-            {Icon}
-            {toastMessage}
-          </div>
-        )}
-      </div>
+      {messages.map(({ id, type, target, placement, message, HeadIcon }) => (
+        <Toast
+          key={id}
+          variant={type}
+          target={target as HTMLElement}
+          placement={placement}
+          className="inline-flex items-center gap-1.5"
+          close={() => hideToast(id)}
+        >
+          {HeadIcon !== undefined && <HeadIcon />}
+          {message}
+        </Toast>
+      ))}
     </ProcessorContext.Provider>
   );
 };
