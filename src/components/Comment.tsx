@@ -1,5 +1,6 @@
 import Button from 'src/components/Button';
 import { calcTimeAgo } from 'src/utils/date';
+import Avatar from 'src/components/Avatar';
 import type { FC } from 'react';
 
 type CommentProps = {
@@ -19,18 +20,7 @@ const Comment: FC<CommentProps> = ({ comment, writer, onClickReply }) => {
   return (
     <div className="my-3 flex flex-col gap-3 rounded-lg border border-gray-300 px-3 py-3.5 text-slate-800 shadow">
       <div className="flex items-center gap-2">
-        {writer.avatar !== undefined && (
-          <img
-            src={writer.avatar}
-            alt={writer.name}
-            className="box-border inline-block h-10 w-10 rounded-full border border-slate-300"
-          />
-        )}
-        {writer.avatar === undefined && (
-          <div className="box-border inline-block h-10 w-10 rounded-full border border-slate-500 bg-slate-800 text-center font-bold leading-10 text-amber-50">
-            {writer.name[0]}
-          </div>
-        )}
+        <Avatar dataUrl={writer.avatar} name={writer.name} />
         <div>
           {writer.name}
           <div className="mt-auto flex items-center gap-2 text-xs">

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Avatar from 'src/components/Avatar';
 import Button from 'src/components/Button';
 import ConditionalSpinner from 'src/components/ConditionalSpinner';
 import useApp from 'src/hooks/useApp';
@@ -111,9 +112,6 @@ const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
           />
           <label
             htmlFor="new-comment-avatar"
-            className={`h-10 w-10 cursor-pointer rounded-full border bg-slate-800 pl-px text-center text-2xl leading-9 text-amber-50 ${
-              avatar ? 'border-slate-300' : 'border-slate-500'
-            }`}
             onClick={(e) => {
               e.preventDefault();
               warnToast('준비 중, 곧 만나요!', {
@@ -122,14 +120,7 @@ const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
               });
             }}
           >
-            {avatar === undefined && '?'}
-            {avatar !== undefined && (
-              <img
-                src={avatarDataURL}
-                alt="저장할 아바타 이미지"
-                className="h-full w-full rounded-full"
-              />
-            )}
+            <Avatar dataUrl={avatarDataURL} name="?" />
           </label>
         </div>
         <input
