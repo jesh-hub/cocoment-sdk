@@ -31,11 +31,12 @@ const provider = new GoogleAuthProvider();
 
 export const login = async () => {
   try {
-    // const result =
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
 
-    // const credential = GoogleAuthProvider.credentialFromResult(result);
-    // const token = credential?.accessToken;
+    const token = await result.user.getIdToken(true);
+    localStorage.setItem('Authorization', `Basic ${token}`);
+
+    return result.user;
   } catch (e) {
     // TODO 브라우저 팝업 설정 등 에러 코드 확인
     const error = e as FirebaseError;
@@ -49,6 +50,7 @@ export const login = async () => {
 
 export const logout = async () => {
   await signOut(auth);
+  localStorage.removeItem('Authorization');
 };
 
 export const subscribeAuthState = (

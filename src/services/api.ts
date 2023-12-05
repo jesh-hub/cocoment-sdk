@@ -22,7 +22,11 @@ export const get = <T>(
   url: string,
   { path, query, signal }: AxiosGetParams = {},
 ) => {
-  const config: AxiosRequestConfig<T> = {};
+  const config: AxiosRequestConfig = {
+    headers: {
+      Authorization: localStorage.getItem('Authorization'),
+    },
+  };
   if (path !== undefined) {
     if (Array.isArray(path)) url += `/${path.join('/')}`;
     else url += `/${path}`;
@@ -35,5 +39,9 @@ export const get = <T>(
 };
 
 export const post = <T, D>(url: string, body: D) => {
-  return Axios.post<T, T, D>(url, body);
+  return Axios.post<T, T, D>(url, body, {
+    headers: {
+      Authorization: localStorage.getItem('Authorization'),
+    },
+  });
 };

@@ -2,15 +2,23 @@ import Button from 'src/components/Button';
 import { ErrorMessages } from 'src/constants/errors';
 import { useUser } from 'src/hooks/useApp';
 import { useToaster } from 'src/hooks/useToaster';
+import { get } from 'src/services/api';
 import { login as loginWithFirebase, logout } from 'src/services/firebase';
-import { RoutePaths, openPopup } from 'src/services/webapp';
+import { Popup, RoutePaths } from 'src/services/webapp';
 import type { MouseEventHandler } from 'react';
+import type { User } from 'firebase/auth';
+
+type ProfileMessage = {
+  init?: boolean;
+  avatar?: File;
+  nickname?: string;
+};
 
 const PartHeader = () => {
   const user = useUser();
   const { errorToast } = useToaster();
 
-  const withErrorHandler = (fn: () => Promise<void> | void) => async () => {
+  const withErrorHandler = async (fn: () => Promise<void> | void) => {
     try {
       await fn();
     } catch (e) {
@@ -21,11 +29,49 @@ const PartHeader = () => {
     }
   };
 
-  const login = withErrorHandler(() => {
-    openPopup<{
-      provider: string;
-    }>(RoutePaths.LOGIN, withErrorHandler(loginWithFirebase));
-  });
+  const openProfile = (name: string, url: string) =>
+    withErrorHandler(() => {
+      const popup = new Popup<ProfileMessage>(RoutePaths.PROFILE);
+      popup.onReceiveMessage = ({ init, ...data }) => {
+        if (init) popup.postMessage({ name, url });
+        else void onProfileReceiveMessage(data);
+      };
+      popup.open();
+    });
+
+  const onProfileReceiveMessage = ({ avatar, nickname }: ProfileMessage) =>
+    withErrorHandler(() => {
+      console.log(avatar);
+      console.log(nickname);
+    });
+
+  const login = () =>
+    withErrorHandler(() => {
+      const popup = new Popup<{ provider: string }>(RoutePaths.LOGIN);
+      popup.onReceiveMessage = onLoginReceiveMessage;
+      popup.open();
+    });
+
+  const onLoginReceiveMessage = () =>
+    withErrorHandler(async () => {
+      const user = await loginWithFirebase();
+      await checkFirstLogin(user);
+    });
+
+  const checkFirstLogin = async (user: User) => {
+    try {
+      if (localStorage.getItem('FirstLoginChecked')) return;
+
+      const { isNewUser } = await get<{
+        isNewUser: boolean;
+      }>('/v1/account/check-new-user');
+      if (isNewUser)
+        void openProfile(user.displayName || '', user.photoURL || '');
+      localStorage.setItem('FirstLoginChecked', '1');
+    } catch (e) {
+      // 에러처리 하지 않는다.
+    }
+  };
 
   return (
     <div className="my-3 text-right">
