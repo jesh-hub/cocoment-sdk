@@ -6,7 +6,7 @@ export enum RoutePaths {
 
 export const openPopup = <T>(
   path: RoutePaths,
-  onReceiveMessage: (data: T) => void,
+  onReceiveMessage: (data?: T) => Promise<void> | void,
 ) => {
   const popup = window.open(
     import.meta.env.VITE_APP_WEBAPP_URL + path,
@@ -20,7 +20,7 @@ export const openPopup = <T>(
     if (origin !== import.meta.env.VITE_APP_WEBAPP_URL) return;
 
     // console.log('onReceiveMessage', data);
-    onReceiveMessage(data);
+    void onReceiveMessage(data);
   };
 
   addEventListener('message', handleReceiveMessage);

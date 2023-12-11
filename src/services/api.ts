@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 const Axios = axios.create({ baseURL: import.meta.env.VITE_APP_API_URL });
 Axios.interceptors.response.use(
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   ({ data }) => data,
   (error: AxiosError<{ message?: string }>) => {
     if (error.code === AxiosError.ERR_CANCELED) return;
@@ -13,7 +14,7 @@ Axios.interceptors.response.use(
 
 type AxiosGetParams = {
   path?: string[] | string;
-  query?: any;
+  query?: { [key: string]: string };
   signal?: AbortSignal;
 };
 
@@ -21,7 +22,7 @@ export const get = <T>(
   url: string,
   { path, query, signal }: AxiosGetParams = {},
 ) => {
-  const config: AxiosRequestConfig = {};
+  const config: AxiosRequestConfig<T> = {};
   if (path !== undefined) {
     if (Array.isArray(path)) url += `/${path.join('/')}`;
     else url += `/${path}`;

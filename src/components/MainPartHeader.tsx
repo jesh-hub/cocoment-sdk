@@ -1,22 +1,31 @@
 import Button from 'src/components/Button';
 import { ErrorMessages } from 'src/constants/errors';
 import useApp from 'src/hooks/useApp';
-import useToast from 'src/hooks/useToast';
-import { login, logout } from 'src/services/firebase';
+import useToaster from 'src/hooks/useToaster';
+import { login as loginWithFirebase, logout } from 'src/services/firebase';
 import { RoutePaths, openPopup } from 'src/services/webapp';
+import type { MouseEventHandler } from 'react';
 
 const PartHeader = () => {
   const { user } = useApp();
-  const { errorToast } = useToast();
+  const { errorToast } = useToaster();
 
-  const withErrorHandler = (fn: Function) => async () => {
+  const withErrorHandler = (fn: () => Promise<void> | void) => async () => {
     try {
       await fn();
     } catch (e) {
       const code = (e as Error).message as keyof typeof ErrorMessages;
-      errorToast(ErrorMessages[code] || code);
+      errorToast(ErrorMessages[code] || code, {
+        reference: null, // TODO
+      });
     }
   };
+
+  const login = withErrorHandler(() => {
+    openPopup<{
+      provider: string;
+    }>(RoutePaths.LOGIN, withErrorHandler(loginWithFirebase));
+  });
 
   return (
     <div className="my-3 text-right">
@@ -25,15 +34,17 @@ const PartHeader = () => {
           size="sm"
           weight="semibold"
           disabled={user === undefined}
-          onClick={withErrorHandler(() => {
-            openPopup(RoutePaths.LOGIN, withErrorHandler(login));
-          })}
+          onClick={login as MouseEventHandler<HTMLButtonElement>}
         >
           로그인
         </Button>
       )}
       {user && (
-        <Button size="sm" weight="semibold" onClick={logout}>
+        <Button
+          size="sm"
+          weight="semibold"
+          onClick={logout as MouseEventHandler<HTMLButtonElement>}
+        >
           로그아웃
         </Button>
       )}

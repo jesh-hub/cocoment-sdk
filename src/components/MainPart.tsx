@@ -1,40 +1,46 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import CommentTree from 'src/components/CommentTree';
+import ConditionalSpinner from 'src/components/ConditionalSpinner';
 import MainPartHeader from 'src/components/MainPartHeader';
-import { Spinner } from 'src/components/SvgIcons.tsx';
 import WritableComment from 'src/components/WritableComment.tsx';
 import { AppContext } from 'src/contexts/AppContext';
-import useWaitProcess from 'src/hooks/useWaitProcess';
+import useProcessor from 'src/hooks/useProcessor';
 import { get, post } from 'src/services/api';
 import type {
   CcmtComment,
   CcmtCommentPostBody,
   VisualComment,
 } from 'types/comment';
+import type { FC } from 'react';
 
-const MainPart: React.FC = () => {
+const MainPart: FC = () => {
   const { pageId } = useContext(AppContext);
-  const { waitingCount, waitProcessAsync } = useWaitProcess();
+  const [processingCount, process] = useProcessor();
 
   const [comments, setComments] = useState<VisualComment[]>([]);
 
-  const fetchComments = (signal?: AbortSignal) =>
-    waitProcessAsync(async () => {
-      const res = await get<CcmtComment[] | undefined>('/v1/comment', {
-        query: { page_id: pageId },
-        signal,
-      });
+  const fetchComments = useCallback(
+    async (signal?: AbortSignal) => {
+      const res = await process(() =>
+        get<CcmtComment[]>('/v1/comment', {
+          query: { page_id: pageId },
+          signal,
+        }),
+      );
       if (res !== undefined) setComments(res);
-    });
+    },
+    [pageId, process],
+  );
 
   useEffect(() => {
     const ac = new AbortController();
+    void fetchComments(ac.signal);
+    return () => {
+      ac.abort();
+    };
+  }, [fetchComments]);
 
-    fetchComments(ac.signal).then();
-    return () => ac.abort();
-  }, []);
-
-  const handleClickReply = (cid: string) => () =>
+  const handleToggleReply = (cid: string) =>
     setComments((comments) => {
       return comments.map(({ childrenVisible, ...comment }) => ({
         childrenVisible:
@@ -54,25 +60,25 @@ const MainPart: React.FC = () => {
       parent_id: parentId,
       user_id: userName,
     });
-    return fetchComments();
+    void fetchComments();
   };
 
   return (
     <>
       <MainPartHeader />
-      <WritableComment handleSubmit={handlePostComment} />
-      {waitingCount === 0 && (
+      <WritableComment onSubmit={handlePostComment} />
+      <ConditionalSpinner
+        processingCount={processingCount}
+        spinnerOuter={(children) => (
+          <div className="flex items-center justify-center p-4">{children}</div>
+        )}
+      >
         <CommentTree
           comments={comments}
-          handleClickReply={handleClickReply}
-          handlePostComment={handlePostComment}
+          onToggleReply={handleToggleReply}
+          onSubmitReply={handlePostComment}
         />
-      )}
-      {waitingCount > 0 && (
-        <div className="flex items-center justify-center p-4">
-          <Spinner />
-        </div>
-      )}
+      </ConditionalSpinner>
     </>
   );
 };

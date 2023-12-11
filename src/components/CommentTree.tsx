@@ -1,24 +1,24 @@
-import React from 'react';
 import Comment from 'src/components/Comment';
 import WritableComment from 'src/components/WritableComment';
+import type { FC } from 'react';
 import type { VisualComment } from 'types/comment';
 
 type CommentTreeProps = {
   parentId?: string; // uuid
   comments: VisualComment[];
-  handleClickReply?: (id: string) => () => void;
-  handlePostComment: (
+  onToggleReply?: (id: string) => void;
+  onSubmitReply: (
     content: string,
     userName: string,
     parentId?: string,
   ) => Promise<void>;
 };
 
-const CommentTree: React.FC<CommentTreeProps> = ({
+const CommentTree: FC<CommentTreeProps> = ({
   parentId,
   comments,
-  handleClickReply,
-  handlePostComment,
+  onToggleReply,
+  onSubmitReply,
 }) => {
   return (
     <div className={parentId && `ml-8`}>
@@ -33,13 +33,13 @@ const CommentTree: React.FC<CommentTreeProps> = ({
                   content: body_text || '',
                 }}
                 writer={{ name: user_id }}
-                handleClickReply={handleClickReply}
+                onClickReply={onToggleReply}
               />
               {childrenVisible && (
                 <CommentTree
                   parentId={id}
                   comments={child || []}
-                  handlePostComment={handlePostComment}
+                  onSubmitReply={onSubmitReply}
                 />
               )}
             </li>
@@ -47,9 +47,7 @@ const CommentTree: React.FC<CommentTreeProps> = ({
         )}
       </ul>
       {parentId !== undefined && (
-        <WritableComment
-          handleSubmit={(c, u) => handlePostComment(c, u, parentId)}
-        />
+        <WritableComment onSubmit={(c, u) => onSubmitReply(c, u, parentId)} />
       )}
     </div>
   );
