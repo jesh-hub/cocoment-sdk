@@ -1,24 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Button from 'src/components/Button';
-import { Spinner } from 'src/components/SvgIcons.tsx';
+import ConditionalSpinner from 'src/components/ConditionalSpinner';
 import useApp from 'src/hooks/useApp';
-import useToast from 'src/hooks/useToast';
-import useWaitProcess from 'src/hooks/useWaitProcess';
+import useProcessor from 'src/hooks/useProcessor';
+import useToaster from 'src/hooks/useToaster';
+import type { ChangeEvent, ChangeEventHandler, FC, FormEvent } from 'react';
 
 type WritableCommentProps = {
-  handleSubmit: (content: string, name: string) => Promise<void>;
+  onSubmit: (content: string, name: string) => Promise<void>;
 };
 
-const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
+const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
   const { user } = useApp();
-  const { hideToast, errorToast, warnToast } = useToast();
-  const { waitingCount, waitProcessAsync } = useWaitProcess();
+  const { errorToast, warnToast } = useToaster();
+  const [processingCount, process] = useProcessor();
 
   const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
 
-  const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) =>
-    waitProcessAsync(async () => {
+  const handleChangeAvatar = (e: ChangeEvent<HTMLInputElement>) =>
+    process(async () => {
       const [file] = e.target.files || [];
 
       if (file === undefined) throw new Error('파일을 다시 확인해주세요.');
@@ -40,7 +41,7 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
 
   const [name, setName] = useState<string>('');
   const [content, setContent] = useState<string>('');
-  const submitButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [btnReference, setBtnReference] = useState<HTMLElement | null>(null);
   const isPrevInvalid = useRef<boolean>(false);
 
   useEffect(() => {
@@ -49,17 +50,20 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
 
   const handleInputChange =
     (setState: typeof setName | typeof setContent) =>
-    ({ target }: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    ({ target }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setState(target.value);
       isPrevInvalid.current = false;
     };
   const handleInputInvalid =
     (message: string) =>
-    (e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (e: FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       e.preventDefault();
 
       if (!isPrevInvalid.current) {
-        errorToast(message, submitButtonRef.current as HTMLButtonElement, 'l');
+        errorToast(message, {
+          reference: btnReference,
+          placement: 'bottom-end',
+        });
         (e.target as HTMLInputElement | HTMLTextAreaElement).focus();
         isPrevInvalid.current = true;
       }
@@ -82,12 +86,12 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       }`}
       onSubmit={(e) => {
         e.preventDefault();
-        hideToast();
-        waitProcessAsync(async () => {
-          await handleSubmit(content, name);
+        // TODO hideToast();
+        void process(async () => {
+          await onSubmit(content, name);
           setName('');
           setContent('');
-        }).then();
+        });
       }}
       onClick={() => {
         isPrevInvalid.current = false;
@@ -101,7 +105,9 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
             accept="image/*"
             title="아바타 이미지를 등록하세요. (선택)"
             className="hidden"
-            onChange={handleChangeAvatar}
+            onChange={
+              handleChangeAvatar as ChangeEventHandler<HTMLInputElement>
+            }
           />
           <label
             htmlFor="new-comment-avatar"
@@ -110,7 +116,10 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
             }`}
             onClick={(e) => {
               e.preventDefault();
-              warnToast('준비 중, 곧 만나요!', e.target);
+              warnToast('준비 중, 곧 만나요!', {
+                reference: e.target as HTMLLabelElement,
+                placement: 'bottom-start',
+              });
             }}
           >
             {avatar === undefined && '?'}
@@ -150,12 +159,13 @@ const WritableComment: React.FC<WritableCommentProps> = ({ handleSubmit }) => {
       <div className="mr-3 mt-1 text-right">
         <Button
           type="submit"
-          ref={submitButtonRef}
+          ref={setBtnReference}
           variant="primary"
-          disabled={waitingCount > 0}
+          disabled={processingCount > 0}
         >
-          {waitingCount > 0 && <Spinner />}
-          {waitingCount === 0 && '등록'}
+          <ConditionalSpinner processingCount={processingCount}>
+            등록
+          </ConditionalSpinner>
         </Button>
       </div>
     </form>

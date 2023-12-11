@@ -1,6 +1,6 @@
-import React from 'react';
 import Button from 'src/components/Button';
 import { calcTimeAgo } from 'src/utils/date';
+import type { FC } from 'react';
 
 type CommentProps = {
   comment: {
@@ -12,14 +12,10 @@ type CommentProps = {
     name: string;
     avatar?: string;
   };
-  handleClickReply?: (id: string) => () => void;
+  onClickReply?: (id: string) => void;
 };
 
-const Comment: React.FC<CommentProps> = ({
-  comment,
-  writer,
-  handleClickReply,
-}) => {
+const Comment: FC<CommentProps> = ({ comment, writer, onClickReply }) => {
   return (
     <div className="my-3 flex flex-col gap-3 rounded-lg border border-gray-300 px-3 py-3.5 text-slate-800 shadow">
       <div className="flex items-center gap-2">
@@ -39,11 +35,11 @@ const Comment: React.FC<CommentProps> = ({
           {writer.name}
           <div className="mt-auto flex items-center gap-2 text-xs">
             <div className="text-slate-500">{calcTimeAgo(comment.created)}</div>
-            {handleClickReply !== undefined && (
+            {onClickReply !== undefined && (
               <Button
                 size="sm"
                 weight="semibold"
-                onClick={handleClickReply(comment.id)}
+                onClick={() => onClickReply(comment.id)}
               >
                 대댓글
               </Button>

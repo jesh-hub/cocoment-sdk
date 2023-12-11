@@ -1,13 +1,13 @@
 import MainPart from 'src/components/MainPart';
 import { AppProvider } from 'src/contexts/AppContext';
-import { ProcessorProvider } from 'src/contexts/ProcessorContext';
+import ToasterProvider from 'src/contexts/ToasterProvider';
 
 function App({ pageId }: { pageId: string }) {
   return (
     <AppProvider pageId={pageId}>
-      <ProcessorProvider>
+      <ToasterProvider>
         <MainPart />
-      </ProcessorProvider>
+      </ToasterProvider>
     </AppProvider>
   );
 }
