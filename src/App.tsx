@@ -1,5 +1,5 @@
 import MainPart from 'src/components/MainPart';
-import { AppProvider } from 'src/contexts/AppContext';
+import AppProvider from 'src/contexts/AppProvider';
 import ToasterProvider from 'src/contexts/ToasterProvider';
 
 function App({ pageId }: { pageId: string }) {

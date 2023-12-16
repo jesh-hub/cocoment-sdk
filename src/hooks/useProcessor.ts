@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
-import useToaster from 'src/hooks/useToaster';
+import { useToaster } from 'src/hooks/useToaster';
 import { alwaysResolver } from 'src/utils/resolver';
 
 type FuncAnon<T> = () => Promise<T | undefined>;
 type FuncProcess = <T = void>(fn: FuncAnon<T>) => Promise<T | undefined>;
 
-export default function useProcessor(
+export function useProcessor(
   initialProcessingCount = 0,
 ): [number, FuncProcess] {
   const { errorToast } = useToaster();

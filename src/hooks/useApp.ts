@@ -1,6 +1,13 @@
 import { useContext } from 'react';
-import { AppContext } from 'src/contexts/AppContext';
+import { PageIdContext, UserContext } from 'src/contexts/AppContext.tsx';
 
-export default function useApp() {
-  return useContext(AppContext);
+export function usePageId() {
+  const value = useContext(PageIdContext);
+
+  if (value === null) throw Error('Context page id has not been provided.');
+  return value;
+}
+
+export function useUser() {
+  return useContext(UserContext);
 }

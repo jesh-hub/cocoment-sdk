@@ -1,10 +1,10 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CommentTree from 'src/components/CommentTree';
 import ConditionalSpinner from 'src/components/ConditionalSpinner';
 import MainPartHeader from 'src/components/MainPartHeader';
 import WritableComment from 'src/components/WritableComment.tsx';
-import { AppContext } from 'src/contexts/AppContext';
-import useProcessor from 'src/hooks/useProcessor';
+import { usePageId } from 'src/hooks/useApp';
+import { useProcessor } from 'src/hooks/useProcessor';
 import { get, post } from 'src/services/api';
 import type {
   CcmtComment,
@@ -14,7 +14,7 @@ import type {
 import type { FC } from 'react';
 
 const MainPart: FC = () => {
-  const { pageId } = useContext(AppContext);
+  const pageId = usePageId();
   const [processingCount, process] = useProcessor();
 
   const [comments, setComments] = useState<VisualComment[]>([]);

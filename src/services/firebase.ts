@@ -1,12 +1,13 @@
 // Import the functions you need from the SDKs you need
-import { FirebaseError, initializeApp } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import {
   GoogleAuthProvider,
-  User,
   getAuth,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
+import type { FirebaseError } from 'firebase/app';
+import type { NextOrObserver, Unsubscribe, User } from 'firebase/auth';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -50,15 +51,8 @@ export const logout = async () => {
   await signOut(auth);
 };
 
-export const subscribeAuthState = ({
-  login,
-  logout,
-}: {
-  login: (user: User) => void;
-  logout: () => void;
-}) => {
-  return auth.onAuthStateChanged((user) => {
-    if (user) login(user);
-    else logout();
-  });
+export const subscribeAuthState = (
+  cb: NextOrObserver<User | null>,
+): Unsubscribe => {
+  return auth.onAuthStateChanged(cb);
 };

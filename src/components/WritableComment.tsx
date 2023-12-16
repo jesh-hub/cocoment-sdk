@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import Avatar from 'src/components/Avatar';
 import Button from 'src/components/Button';
 import ConditionalSpinner from 'src/components/ConditionalSpinner';
-import useApp from 'src/hooks/useApp';
-import useProcessor from 'src/hooks/useProcessor';
-import useToaster from 'src/hooks/useToaster';
+import { useUser } from 'src/hooks/useApp';
+import { useProcessor } from 'src/hooks/useProcessor';
+import { useToaster } from 'src/hooks/useToaster';
 import type { ChangeEvent, ChangeEventHandler, FC, FormEvent } from 'react';
 
 type WritableCommentProps = {
@@ -12,7 +12,7 @@ type WritableCommentProps = {
 };
 
 const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
-  const { user } = useApp();
+  const user = useUser();
   const { errorToast, warnToast } = useToaster();
   const [processingCount, process] = useProcessor();
 

@@ -1,13 +1,13 @@
 import Button from 'src/components/Button';
 import { ErrorMessages } from 'src/constants/errors';
-import useApp from 'src/hooks/useApp';
-import useToaster from 'src/hooks/useToaster';
+import { useUser } from 'src/hooks/useApp';
+import { useToaster } from 'src/hooks/useToaster';
 import { login as loginWithFirebase, logout } from 'src/services/firebase';
 import { RoutePaths, openPopup } from 'src/services/webapp';
 import type { MouseEventHandler } from 'react';
 
 const PartHeader = () => {
-  const { user } = useApp();
+  const user = useUser();
   const { errorToast } = useToaster();
 
   const withErrorHandler = (fn: () => Promise<void> | void) => async () => {
@@ -33,7 +33,6 @@ const PartHeader = () => {
         <Button
           size="sm"
           weight="semibold"
-          disabled={user === undefined}
           onClick={login as MouseEventHandler<HTMLButtonElement>}
         >
           로그인
