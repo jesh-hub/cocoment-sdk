@@ -34,7 +34,7 @@ export const login = async () => {
     const result = await signInWithPopup(auth, provider);
 
     const token = await result.user.getIdToken(true);
-    localStorage.setItem('Authorization', `Basic ${token}`);
+    localStorage.setItem('Authorization', `Bearer ${token}`);
 
     return result.user;
   } catch (e) {

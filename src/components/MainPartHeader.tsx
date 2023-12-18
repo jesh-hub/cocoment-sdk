@@ -8,11 +8,14 @@ import { Popup, RoutePaths } from 'src/services/webapp';
 import type { MouseEventHandler } from 'react';
 import type { User } from 'firebase/auth';
 
-type ProfileMessage = {
-  init?: boolean;
-  avatar?: File;
-  nickname?: string;
+type ProfileInitMessage = {
+  init: true;
 };
+type ProfileDataMessage = {
+  avatar?: File;
+  nickname: string;
+};
+type ProfileMessage = ProfileInitMessage & ProfileDataMessage;
 
 const PartHeader = () => {
   const user = useUser();
@@ -39,10 +42,22 @@ const PartHeader = () => {
       popup.open();
     });
 
-  const onProfileReceiveMessage = ({ avatar, nickname }: ProfileMessage) =>
-    withErrorHandler(() => {
-      console.log(avatar);
-      console.log(nickname);
+  const onProfileReceiveMessage = ({ avatar, nickname }: ProfileDataMessage) =>
+    withErrorHandler(async () => {
+      console.log(nickname); // TODO update
+      if (avatar !== undefined) await uploadAvatar(avatar);
+
+      async function uploadAvatar(file: File) {
+        const { requiredHeaders, s3PresignedURL } = await get<{
+          requiredHeaders: { [key: string]: string };
+          s3PresignedURL: string;
+        }>('/v1/account/profile/upload-url', {
+          query: {
+            image_format: file.type.replace('image/', ''),
+          },
+        });
+        console.log(s3PresignedURL, requiredHeaders);
+      }
     });
 
   const login = () =>
@@ -75,6 +90,20 @@ const PartHeader = () => {
 
   return (
     <div className="my-3 text-right">
+      {user && (
+        <Button
+          size="sm"
+          weight="semibold"
+          onClick={() => {
+            const username = user?.displayName || ''; // TODO 백엔드와 같이 가지고 있는 사용자 정보로
+            const profileUrl = user?.photoURL || ''; // TODO 백엔드와 같이 가지고 있는 사용자 정보로
+
+            void openProfile(username, profileUrl);
+          }}
+        >
+          프로필 변경
+        </Button>
+      )}
       {!user && (
         <Button
           size="sm"
