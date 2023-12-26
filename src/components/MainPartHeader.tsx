@@ -1,3 +1,5 @@
+import type { User } from 'firebase/auth';
+import type { MouseEventHandler } from 'react';
 import Button from 'src/components/Button';
 import { ErrorMessages } from 'src/constants/errors';
 import { useUser } from 'src/hooks/useApp';
@@ -5,8 +7,7 @@ import { useToaster } from 'src/hooks/useToaster';
 import { get } from 'src/services/api';
 import { login as loginWithFirebase, logout } from 'src/services/firebase';
 import { Popup, RoutePaths } from 'src/services/webapp';
-import type { MouseEventHandler } from 'react';
-import type { User } from 'firebase/auth';
+import { toBinary } from 'src/utils/file-reader';
 
 type ProfileInitMessage = {
   init: true;
@@ -56,6 +57,8 @@ const PartHeader = () => {
             image_format: file.type.replace('image/', ''),
           },
         });
+        const result = await toBinary(file);
+        console.log(result);
         console.log(s3PresignedURL, requiredHeaders);
       }
     });

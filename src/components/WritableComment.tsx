@@ -1,3 +1,4 @@
+import type { ChangeEvent, ChangeEventHandler, FC, FormEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import Avatar from 'src/components/Avatar';
 import Button from 'src/components/Button';
@@ -5,7 +6,7 @@ import ConditionalSpinner from 'src/components/ConditionalSpinner';
 import { useUser } from 'src/hooks/useApp';
 import { useProcessor } from 'src/hooks/useProcessor';
 import { useToaster } from 'src/hooks/useToaster';
-import type { ChangeEvent, ChangeEventHandler, FC, FormEvent } from 'react';
+import { toDataURL } from 'src/utils/file-reader';
 
 type WritableCommentProps = {
   onSubmit: (content: string, name: string) => Promise<void>;
@@ -16,7 +17,7 @@ const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
   const { errorToast, warnToast } = useToaster();
   const [processingCount, process] = useProcessor();
 
-  const [avatar, setAvatar] = useState<File>();
+  // const [avatar, setAvatar] = useState<File>();
   const [avatarDataURL, setAvatarDataURL] = useState<string>('');
 
   const handleChangeAvatar = (e: ChangeEvent<HTMLInputElement>) =>
@@ -27,17 +28,8 @@ const WritableComment: FC<WritableCommentProps> = ({ onSubmit }) => {
       if (!file.type.startsWith('image/'))
         throw new Error('이미지 파일만 첨부할 수 있어요.');
 
-      const reader = new FileReader();
-      await new Promise<void>((resolve, reject) => {
-        reader.onload = () => resolve();
-        reader.onerror = (event: ProgressEvent<FileReader>) => {
-          if (event.target?.error) reject(event.target.error);
-          else reject(new Error('첨부하신 이미지 파일을 처리할 수 없습니다.'));
-        };
-        reader.readAsDataURL(file);
-      });
-      if (reader.result !== null) setAvatarDataURL(reader.result as string);
-      setAvatar(file);
+      const result = await toDataURL(file);
+      setAvatarDataURL(result);
     });
 
   const [name, setName] = useState<string>('');
